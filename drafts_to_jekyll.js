@@ -17,29 +17,43 @@ const token = githubCredential.getValue("token");
 const repoName = githubCredential.getValue("repoName");
 const email = githubCredential.getValue("email");
 
-// Prepare your post content
-const title = draft.content.split("\n")[0].replace('# ', ''); // Assuming the first line of the draft is the title
+// Prepare your post content with front matter
+const title = draft.title.replace('# ', '');
 const date = new Date().toISOString().split('T')[0];
 const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-').trim('-');
 const fileName = `${date}-${slug}.md`;
-const fullContent = draft.content; // Here you might format your draft content as needed
+
+// Dynamically generate categories from Drafts tags
+const categories = draft.tags.join(', ');
+
+// Construct front matter
+const frontMatter = `---
+layout: post
+title: "${title}"
+date: ${date}
+categories: [${categories}]
+---
+`;
+
+const fullContent = frontMatter + draft.content.split("\n").slice(1).join("\n"); // Append the rest of the draft content excluding the title
 const encodedContent = Base64.encode(fullContent);
 
 // Setup for the GitHub API request
 const path = `_posts/${fileName}`;
 const apiUrl = `https://api.github.com/repos/${username}/${repoName}/contents/${path}`;
 
-data = {
+// Construct data payload
+const data = {
     owner: `${username}`,
     repo: `${repoName}`,
     path: `${path}`,
-    message: 'Send from Drafts',
+    message: 'Sent from Drafts',
     committer: {
       name: `${username}`,
       email: `${email}`
     },
     content: encodedContent
-  }
+};
 
 // Create the HTTP request
 let http = HTTP.create();
@@ -59,5 +73,5 @@ let response = http.request({
 if (response.statusCode === 200 || response.statusCode === 201) {
     console.log("Successfully created/updated the file on GitHub.");
 } else {
-    console.log("Failed to post to GitHub. Status code: " + response.statusCode + " Response: " + response.responseText);
+    console.log(`Failed to post to GitHub. Status code: ${response.statusCode} Response: ${response.responseText}`);
 }
