@@ -2,6 +2,8 @@
 
 This repository contains a Drafts app action script that automates the process of posting content directly to a GitHub repository, specifically designed for Jekyll or other static site generators that use Markdown files in a `_posts` directory.
 
+The current version in the Drafts action directory: https://directory.getdrafts.com/a/2Qa
+
 ## Features
 
 - Automatically formats Draft content into a Markdown file.
